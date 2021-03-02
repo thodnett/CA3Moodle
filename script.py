@@ -1,12 +1,24 @@
 import os
 from requests import get, post
 import json
+from bs4 import BeautifulSoup
 
 KEY = "8cc87cf406775101c2df87b07b3a170d"
 
 URL = "https://034f8a1dcb5c.eu.ngrok.io"
 
 ENDPOINT="/webservice/rest/server.php"
+# This is to get the directory that the program  
+# is currently running in. 
+
+for subdir, dirs, files in os.walk('/workspace/CA3Moodle/'):
+    for filename in files:
+        filepath = subdir + os.sep + filename
+        if filepath.endswith(".html"):
+            soup = BeautifulSoup (open(filepath), features="html.parser")
+            titles=[]
+            for title in soup.find('title'):
+                print(title)
 
 def rest_api_parameters(in_args, prefix='', out_dict=None):
     """Transform dictionary/array structure to a flat dictionary, with key names
@@ -52,17 +64,21 @@ class LocalGetSections(object):
     def __init__(self, cid, secnums = [], secids = []):
         self.getsections = call('local_wsmanagesections_get_sections', courseid = cid, sectionnumbers = secnums, sectionids = secids)
 
+
+class LocalUpdateSections(object):
+    """Updates sectionnames. Requires: courseid and an array with sectionnumbers and sectionnames"""
+
+    def __init__(self, cid, sectionsdata):
+        self.updatesections = call(
+            'local_wsmanagesections_update_sections', courseid=cid, sections=sectionsdata)
+
+
 courseid = "13"
 # Get all sections of the course.
 sec = LocalGetSections(courseid)
-sect_list=(json.dumps(sec.getsections, indent=4, sort_keys=True))
+print(json.dumps(sec.getsections, indent=4, sort_keys=True))
 
 
-# This is to get the directory that the program  
-# is currently running in. 
-dir_path = os.path.dirname(os.path.realpath(__file__)) 
-  
-for root, dirs, files in os.walk(dir_path): 
-    for file in files:  
-        if file.endswith('.md') or file.endswith('.pdf'): 
-            local_files = (root+'/'+str(file)) 
+
+
+
