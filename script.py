@@ -2,23 +2,14 @@ import os
 from requests import get, post
 import json
 from bs4 import BeautifulSoup
+from dateutil import parser
+import datetime
 
 KEY = "8cc87cf406775101c2df87b07b3a170d"
 
 URL = "https://034f8a1dcb5c.eu.ngrok.io"
 
 ENDPOINT="/webservice/rest/server.php"
-# This is to get the directory that the program  
-# is currently running in. 
-
-for subdir, dirs, files in os.walk('/workspace/CA3Moodle/'):
-    for filename in files:
-        filepath = subdir + os.sep + filename
-        if filepath.endswith(".html"):
-            soup = BeautifulSoup (open(filepath), features="html.parser")
-            titles=[]
-            for title in soup.find('title'):
-                print(title)
 
 def rest_api_parameters(in_args, prefix='', out_dict=None):
     """Transform dictionary/array structure to a flat dictionary, with key names
@@ -72,13 +63,40 @@ class LocalUpdateSections(object):
         self.updatesections = call(
             'local_wsmanagesections_update_sections', courseid=cid, sections=sectionsdata)
 
-
 courseid = "13"
 # Get all sections of the course.
 sec = LocalGetSections(courseid)
-print(json.dumps(sec.getsections, indent=4, sort_keys=True))
+    
+def search_files(sec_num):
+    directory='/workspace/CA3Moodle/'
+    for filename in os.listdir(directory):
+        if filename.endswith("wk{0}".format(sec_num)):
+            print(os.path.join(directory, filename))
+        else:
+            continue
 
+def get_summary(sec_num):
+    summary=(json.dumps(sec.getsections[sec_num]['summary'], indent=4, sort_keys=True))
 
+def create_payload(sec_num):
+    #  Assemble the payload
+    data = [{'type': 'num', 'section': 0, 'summary': '', 'summaryformat': 1, 'visible': 1 , 'highlight': 0, 'sectionformatoptions': [{'name': 'level', 'value': '1'}]}]
+    # Assemble the correct summary
+    summary = '<a href="https://thodnett.github.io/CA3Moodle/wk{0}/">Week{0}</a><br>'.format(sec_num),'<a href="https://thodnett.github.io/CA3Moodle/wk{0}.pdf"</a><br>'.format(sec_num)
+    # Assign the correct summary
+    data[0]['summary'] = summary
+    # Set the correct section number
+    data[0]['section'] = sec_num
+    print(data)
 
+def write_to_moodle(sec_num):
+    payload=create_payload(sec_num)
+    sec_write = LocalUpdateSections(courseid, payload)
 
-
+#Assumming week 1 is section 1 
+for week in range(1, 27):
+    summ=get_summary(i)
+    if summ == "None":
+        write_to_moodle(i)
+    elif summ == summary:
+        pass
