@@ -88,8 +88,8 @@ def compare_title_summary(sec_num):
     title=search_files_and_title(sec_num)
     if summary == title:
         pass
-    elif summary == "None" or summary != title:
-        return       
+        if summary == "None" or summary != title:
+            return
      
 def create_payload(sec_num):
     #  Assemble the payload
@@ -106,6 +106,9 @@ def write_to_moodle(sec_num):
     payload=create_payload(sec_num)
     sec_write = LocalUpdateSections(courseid, payload)
 
+"""
+compare_title_summary(1)
+
 def main():
     for i in range(1, 27):
         compare_title_summary(i)
@@ -114,3 +117,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+"""
