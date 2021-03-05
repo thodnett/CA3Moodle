@@ -67,17 +67,30 @@ courseid = "13"
 # Get all sections of the course.
 sec = LocalGetSections(courseid)
     
-def search_files(sec_num):
+def search_files_and_title(sec_num):
     directory='/workspace/CA3Moodle/'
     for filename in os.listdir(directory):
         if filename.endswith("wk{0}".format(sec_num)):
-            print(os.path.join(directory, filename))
+            path=filename
+            for filename in os.listdir(path):
+                if filename.endswith(".html"):
+                    html_files=filename
+                    soup=BeautifulSoup(html_files, 'html.parser')
+                    soup.find('title')
         else:
             continue
 
 def get_summary(sec_num):
     summary=(json.dumps(sec.getsections[sec_num]['summary'], indent=4, sort_keys=True))
 
+def compare_title_summary(sec_num):
+    summary=get_summary(sec_num)
+    title=search_files_and_title(sec_num)
+    if summary == title:
+        pass
+    elif summary == "None" or summary != title:
+        return       
+     
 def create_payload(sec_num):
     #  Assemble the payload
     data = [{'type': 'num', 'section': 0, 'summary': '', 'summaryformat': 1, 'visible': 1 , 'highlight': 0, 'sectionformatoptions': [{'name': 'level', 'value': '1'}]}]
@@ -93,10 +106,11 @@ def write_to_moodle(sec_num):
     payload=create_payload(sec_num)
     sec_write = LocalUpdateSections(courseid, payload)
 
-#Assumming week 1 is section 1 
-for week in range(1, 27):
-    summ=get_summary(i)
-    if summ == "None":
+def main():
+    for i in range(1, 27):
+        compare_title_summary(i)
         write_to_moodle(i)
-    elif summ == summary:
-        pass
+
+
+if __name__ == "__main__":
+    main()
