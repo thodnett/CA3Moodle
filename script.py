@@ -72,11 +72,12 @@ def search_files_and_title(sec_num):
     for filename in os.listdir(directory):
         if filename.endswith("wk{0}".format(sec_num)):
             path=filename
-            for filename in os.listdir(path):
+            for filename in os.listdir(directory+path):
                 if filename.endswith(".html"):
                     html_files=filename
-                    soup=BeautifulSoup(html_files, 'html.parser')
-                    soup.find('title')
+                    print(html_files)
+                    soup=BeautifulSoup(open(directory+path+'/'+html_files), 'html.parser')
+                    title=soup.find('title')
         else:
             continue
 
@@ -89,7 +90,7 @@ def compare_title_summary(sec_num):
     if summary == title:
         pass
         if summary == "None" or summary != title:
-            return
+            return 
      
 def create_payload(sec_num):
     #  Assemble the payload
