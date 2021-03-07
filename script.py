@@ -1,4 +1,5 @@
 import os
+import requests
 from requests import get, post
 import json
 from bs4 import BeautifulSoup
@@ -75,39 +76,82 @@ def search_files_and_title(sec_num):
             for filename in os.listdir(directory+path):
                 if filename.endswith(".html"):
                     html_files=filename
-                    print(html_files)
                     soup=BeautifulSoup(open(directory+path+'/'+html_files), 'html.parser')
+                    soup.prettify()
                     title=soup.find('title')
+                    return title
         else:
             continue
 
 def get_summary(sec_num):
     summary=(json.dumps(sec.getsections[sec_num]['summary'], indent=4, sort_keys=True))
 
+
 def compare_title_summary(sec_num):
     summary=get_summary(sec_num)
     title=search_files_and_title(sec_num)
     if summary == title:
         pass
-        if summary == "None" or summary != title:
-            return 
-     
+    else:
+        return
+
+def scrape_video_date():
+    url="https://drive.google.com/drive/folders/1pFHUrmpLv9gEJsvJYKxMdISuQuQsd_qX"
+    page=requests.get(url)
+    soup=BeautifulSoup(page.content, 'html.parser')
+    videos = soup.find_all('div',class_ = 'Q5txwe')
+    for video in videos:
+        video_date=video.text
+        return video_date
+
+def compare_name_and_date(sec_num):
+    month = parser.parse(list(sec.getsections)[sec_num]['name'].split('-')[0])
+    mon=month.strftime("%Y-%m")
+    video_date=scrape_video_date()
+    if mon in video_date:
+        summ=get_summary(sec_num)
+        if mon == summ:
+            pass
+    else:
+        return mon
+
+def scrape_video_id():
+    url="https://drive.google.com/drive/folders/1pFHUrmpLv9gEJsvJYKxMdISuQuQsd_qX"
+    page=requests.get(url)
+    soup=BeautifulSoup(page.content, 'html.parser')
+    videos = soup.find_all('div',class_ = 'Q5txwe')
+    wk=compare_name_and_date(1)
+    print(wk)
+    for video in videos:
+        if wk in video:
+            video_id = video.parent.parent.parent.parent.attrs['data-id']
+            return video_id
+a=scrape_video_id()   
+print(a)  
+
 def create_payload(sec_num):
+    video_id=scrape_video_id()
     #  Assemble the payload
     data = [{'type': 'num', 'section': 0, 'summary': '', 'summaryformat': 1, 'visible': 1 , 'highlight': 0, 'sectionformatoptions': [{'name': 'level', 'value': '1'}]}]
     # Assemble the correct summary
-    summary = '<a href="https://thodnett.github.io/CA3Moodle/wk{0}/">Week{0}</a><br>'.format(sec_num),'<a href="https://thodnett.github.io/CA3Moodle/wk{0}.pdf"</a><br>'.format(sec_num)
+    summary = '<a href="https://thodnett.github.io/CA3Moodle/wk{0}/">Week{0}</a><br>'.format(sec_num),'<a href="https://thodnett.github.io/CA3Moodle/wk{0}.pdf"</a><br>'.format(sec_num), '<a href="https://drive.google.com/file/d/{0}"</a><br>'.format(video_id)
     # Assign the correct summary
     data[0]['summary'] = summary
     # Set the correct section number
     data[0]['section'] = sec_num
     print(data)
-
-def write_to_moodle(sec_num):
-    payload=create_payload(sec_num)
-    sec_write = LocalUpdateSections(courseid, payload)
-
 """
+def write_to_moodle(sec_num):
+    compare_name_and_date(sec_num)
+    payload=create_payload(sec_num)
+    #sec_write = LocalUpdateSections(courseid, payload)
+#write_to_moodle(3)
+for i in range(1,5):
+    compare_title_summary(i)
+    compare_name_and_date(i)
+    create_payload(i)
+    write_to_moodle(i)
+    
 compare_title_summary(1)
 
 def main():
