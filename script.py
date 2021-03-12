@@ -6,9 +6,9 @@ from bs4 import BeautifulSoup
 from dateutil import parser
 import datetime
 
-KEY = "8cc87cf406775101c2df87b07b3a170d"
+KEY = "bc7ad59923ad95f17dd955868790ccb5"
 
-URL = "https://034f8a1dcb5c.eu.ngrok.io"
+URL = "http://f0ae7213ef73.eu.ngrok.io/"
 
 ENDPOINT="/webservice/rest/server.php"
 
@@ -64,7 +64,7 @@ class LocalUpdateSections(object):
         self.updatesections = call(
             'local_wsmanagesections_update_sections', courseid=cid, sections=sectionsdata)
 
-courseid = "13"
+courseid = "9"
 # Get all sections of the course.
 sec = LocalGetSections(courseid)
     
@@ -97,37 +97,37 @@ def compare_title_summary(sec_num):
     else:
         return
 
-def scrape_video_date_and_id():
-#Scrapes the google drive page and retrieves the id and the date, the date is converted into week number. 
+def scrape_video_date():
+#Scrapes the google drive page and retrieves the date, the date is converted into week number. 
     url="https://drive.google.com/drive/folders/1pFHUrmpLv9gEJsvJYKxMdISuQuQsd_qX"
     page=requests.get(url)
     soup=BeautifulSoup(page.content, 'html.parser')
     videos = soup.find_all('div',class_ = 'Q5txwe')
     for video in videos:
-        result=[]
-        video_id = video.parent.parent.parent.parent.attrs['data-id']
         video_date=video.text
+        video_id = video.parent.parent.parent.parent.attrs['data-id']
         date=video_date
         new=date[ 0 : 10 ]
         month = parser.parse(new)
         mon=month.strftime("%V")
-        result.append(video_id)
-        result.append(mon)
-        return result
+        yield mon, video_id
 
 def compare_sdate_and_vdate(sec_num):
 #Compares the wk of the video with the week of the moodle section.
     month = parser.parse(list(sec.getsections)[sec_num]['name'].split('-')[0])
     mon=month.strftime("%V")
-    video_date=scrape_video_date_and_id()
-    wk=video_date[1]
-    if mon == wk:
-        return video_date
+    mon = int(mon) + 1
+    smon=str(mon)
+    for i in scrape_video_date():
+        if smon in i:
+            return (i[1])
+        else:
+            pass
 
 def create_payload(sec_num):
 #Assembles the payload for the write to moodle function. 
     video_id=compare_sdate_and_vdate(sec_num)
-    id=video_id[0]
+    id=video_id
     #  Assemble the payload
     data = [{'type': 'num', 'section': 0, 'summary': '', 'summaryformat': 1, 'visible': 1 , 'highlight': 0, 'sectionformatoptions': [{'name': 'level', 'value': '1'}]}]
     # Assemble the correct summary
@@ -144,10 +144,11 @@ def write_to_moodle(sec_num):
 
 def main():
 #There are 27 sections in moodle. 
-    for i in range(1, 12):
+    for i in range(1, 28):
         compare_title_summary(i)
         write_to_moodle(i)
 
 
 if __name__ == "__main__":
     main()
+
