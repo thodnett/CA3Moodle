@@ -91,7 +91,7 @@ def compare_title_summary(sec_num):
     title=search_files_and_title(sec_num)
     if summary == None:
         return sec_num
-    elif summary == title:
+    elif "Week{0}".format(sec_num):
         pass
 
 def search_files(sec_num):
@@ -131,17 +131,13 @@ def create_payload_write_to_moodle(sec_num):
     video_id=compare_sdate_and_vdate(sec_num)
     id=video_id
     #  Assemble the payload
-    data = [{'type': 'num', 'section': 0, 'summary': '', 'summaryformat': 1, 'visible': 1 , 'highlight': 0, 'sectionformatoptions': [{'name': 'level', 'value': '1'}]}]
     # Assemble the correct summary
-    summary = '<a href="https://thodnett.github.io/CA3Moodle/wk{0}/">Week{0}</a><br>'.format(sec_num), '<a href="https://thodnett.github.io/CA3Moodle/wk{0}.pdf"</a></br>'.format(sec_num),'<a href="https://drive.google.com/file/d/{0}"</a><br>'.format(id)
-    # Assign the correct summary
-    print(type(data))
-    # Set the correct section number
-    #data[0]['section'] = sec_num
-    #for summ in summary:
-        #data[0]['summary'] = sum
-       # sec_write = LocalUpdateSections(courseid, data)
-    
+    index='<a href="https://thodnett.github.io/CA3Moodle/wk{0}/">Week{0}</a><br>'.format(sec_num)
+    pdf='<a "https://thodnett.github.io/CA3Moodle/wk{0}.pdf"</a></br>'.format(sec_num)
+    video='<a "https://drive.google.com/file/d/{0}"</a><br>'.format(id)
+    data=[{'section': sec_num, 'summary': index + " " + pdf + " " + video}]
+    sec_write = LocalUpdateSections(courseid, data)
+ 
 def main():
     for i in range(1,27):
         av_files=search_files(i)
