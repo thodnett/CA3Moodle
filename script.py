@@ -93,7 +93,7 @@ def compare_title_summary(sec_num):
         return sec_num
     elif "Week{0}".format(sec_num):
         pass
-
+    
 def search_files(sec_num):
 #Searches the files in directory.
     directory='/workspace/CA3Moodle/'
@@ -129,12 +129,12 @@ def compare_sdate_and_vdate(sec_num):
 def create_payload_write_to_moodle(sec_num):
 #Assembles the payload for the write to moodle function.
     video_id=compare_sdate_and_vdate(sec_num)
-    id=video_id
+    v_id=video_id
     #  Assemble the payload
     # Assemble the correct summary
     index='<a href="https://thodnett.github.io/CA3Moodle/wk{0}/">Week{0}</a><br>'.format(sec_num)
-    pdf='<a "https://thodnett.github.io/CA3Moodle/wk{0}.pdf"</a></br>'.format(sec_num)
-    video='<a "https://drive.google.com/file/d/{0}"</a><br>'.format(id)
+    pdf='<a href="https://thodnett.github.io/CA3Moodle/wk{0}.pdf"</a>PDF</a></br>'.format(sec_num)
+    video='<a href="https://drive.google.com/file/d/{0}">Class Recording</a><br>'.format(v_id)
     data=[{'section': sec_num, 'summary': index + " " + pdf + " " + video}]
     sec_write = LocalUpdateSections(courseid, data)
  
