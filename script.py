@@ -59,7 +59,6 @@ class LocalGetSections(object):
 
 class LocalUpdateSections(object):
     """Updates sectionnames. Requires: courseid and an array with sectionnumbers and sectionnames"""
-
     def __init__(self, cid, sectionsdata):
         self.updatesections = call(
             'local_wsmanagesections_update_sections', courseid=cid, sections=sectionsdata)
@@ -67,7 +66,7 @@ class LocalUpdateSections(object):
 courseid = "9"
 # Get all sections of the course.
 sec = LocalGetSections(courseid)
-    
+  
 def search_files_and_title(sec_num):
 #Searches the files in directory and grabs the title from the index page.
     directory='/workspace/CA3Moodle/'
@@ -82,20 +81,28 @@ def search_files_and_title(sec_num):
                     title=soup.find('title')
                     return title
         else:
-            continue
+            return
 
 def get_summary(sec_num):
 #Gets the summary from moodle.
     summary=(json.dumps(sec.getsections[sec_num]['summary'], indent=4, sort_keys=True))
-
+print(get_summary(1))
+"""
 def compare_title_summary(sec_num):
 #Compares the title from the index with the summary on moodle. 
     summary=get_summary(sec_num)
     title=search_files_and_title(sec_num)
-    if summary == title:
+    if summary == None:
+        return sec_num
+    elif summary == title:
         pass
-    else:
-        return
+
+def search_files(sec_num):
+#Searches the files in directory.
+    directory='/workspace/CA3Moodle/'
+    for filename in os.listdir(directory):
+        if filename.endswith("wk{0}".format(sec_num)):
+            return sec_num
 
 def scrape_video_date():
 #Scrapes the google drive page and retrieves the date, the date is converted into week number. 
@@ -121,11 +128,9 @@ def compare_sdate_and_vdate(sec_num):
     for i in scrape_video_date():
         if smon in i:
             return (i[1])
-        else:
-            pass
 
 def create_payload(sec_num):
-#Assembles the payload for the write to moodle function. 
+#Assembles the payload for the write to moodle function.
     video_id=compare_sdate_and_vdate(sec_num)
     id=video_id
     #  Assemble the payload
@@ -143,12 +148,14 @@ def write_to_moodle(sec_num):
     sec_write = LocalUpdateSections(courseid, payload)
 
 def main():
-#There are 27 sections in moodle. 
-    for i in range(1, 28):
-        compare_title_summary(i)
-        write_to_moodle(i)
-
+    for i in range(1,27):
+        av_files=search_files(i)
+        if av_files==None:
+            pass
+        else:
+            files=compare_title_summary(av_files)
+            write_to_moodle(files)
 
 if __name__ == "__main__":
     main()
-
+    """
